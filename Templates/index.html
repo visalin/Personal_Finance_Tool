@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance App</title>
+    <style>
+        body {
+            display: flex;
+            background-color: #e0f7fa;
+            flex-direction: column;
+            align-items: center;
+            justify-content: top;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            text-align: top;
+            color: #4CAF50; /* Green color */
+        }
+        a {
+            color: #2196F3; /* Blue color */
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>
+                <img src="{{ url_for('static', filename='homepage.png') }}" alt="Finance App Image" width="150">
+            </td>
+            <td>
+                <h1>Welcome to the Personal Finance App</h1>
+                <a href="/add_expense">Add Expense</a>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
