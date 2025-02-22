@@ -27,9 +27,24 @@ class Expense(db.Model):
     category = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, default=datetime, nullable=False)  
 
+# Initialize the database
+@app.before_request
+def create_tables():
+    db.create_all()
+
 @app.route('/')
 def index():
     return render_template('login.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    expenses = Expense.query.filter_by(user_id=user_id).order_by(Expense.date.desc()).all()
+    user = User.query.get(user_id)
+    return render_template('dashboard.html', expenses=expenses, username=user.username)
+
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 def add_expense():
@@ -37,11 +52,15 @@ def add_expense():
         description = request.form.get('description')
         amount = float(request.form.get('amount'))
         category = request.form.get('category')
-        new_expense = Expense(user_id=1, description=description, amount=amount, category=category)  # Assuming user ID 1 for now
+        date_str = request.form.get('date')
+        date=datetime.strptime(date_str, '%Y-%m-%d').date()  # Convert string to date object
+        new_expense = Expense(user_id=1, description=description, amount=amount, category=category, date=date)  # Assuming user ID 1 for now
         db.session.add(new_expense)
         db.session.commit()
-        return redirect(url_for('login'))
-    return render_template('add_expense.html')
+        flash('Expense added successfully!', 'success')
+        return redirect(url_for('add_expense'))
+    else: 
+        return render_template('add_expense.html')
 
 # New routes for user registration, login, and logout
 @app.route('/register', methods=['GET', 'POST'])  
@@ -64,10 +83,11 @@ def login():
         password = request.form.get('password')  
         user = User.query.filter_by(username=username).first()  
         if user and user.check_password(password):  
-            session['user_id'] = user.id  
-            flash('Login successful!', 'success')  
-            return redirect(url_for('add_expense'))  
-        flash('Invalid username or password', 'danger')  
+            session['user_id'] = user.id 
+            #flash(f'Hello {user.username}, Welcome to the Personal Finance Tracker!', 'success')
+            return redirect(url_for('dashboard')) 
+        else:
+            flash('Invalid username or password', 'danger')  
     return render_template('login.html')  
 
 @app.route('/logout')  
@@ -77,5 +97,5 @@ def logout():
     return redirect(url_for('login'))  
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    #First Dev Code
+        app.run(debug=True)
+
