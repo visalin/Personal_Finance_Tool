@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tab-container {
+            width: 100%;
+            margin: 20px 0;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .tab-button.active {
+            background-color: #FF8C00;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+   
+        <!-- Flash messages section -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% endwith %}
+        <div class="h1">
+            <header><br>
+            <h1 align-text="center">Personal Finance Dashboard</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px;">
+                <h2>Welcome, {{ username }}!</h2>
+                <h2><a href="/logout">Logout</a></h2>
+            </div>
+            </header>
+        </div>
+    <div class="dashboard-container">
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab(event, 'expenses')">Expenses</button>
+                <button class="tab-button" onclick="openTab(event, 'budget')">Budget</button>
+            </div>
+
+            <div id="expenses" class="tab-content active">
+                <div style="display: flex; justify-content:space-between;">
+                    <h2>Expenses</h2>
+                    <a href="/add_expense" class="action-button">Add New Expense</a>
+                    
+                </div>
+                <div class="expenses-list">
+                    <!-- Expenses will be populated here -->
+                    {% if expenses %}
+                    <table style="border: 1px solid #ddd;">
+                        <thead>
+                            <tr >
+                                <th style="border: 1px solid #ddd;">Date</th>
+                                <th style="border: 1px solid #ddd;">Category</th>
+                                <th style="border: 1px solid #ddd;">Amount</th>
+                                <th style="border: 1px solid #ddd;">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in expenses %}
+                            <tr >
+                                <td style="border: 1px solid #ddd;">{{ expense.date }}</td>
+                                <td style="border: 1px solid #ddd;">{{ expense.category }}</td>
+                                <td style="border: 1px solid #ddd;">${{ "%.2f"|format(expense.amount) }}</td>
+                                <td style="border: 1px solid #ddd;">{{ expense.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No expenses recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="budget" class="tab-content">
+                <h2>Budget</h2>
+                <div class="budget-section">
+                    <!-- Budget information will be added here in future updates -->
+                    <p>Budget tracking feature coming soon!</p>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Hide all tab content
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Remove active class from all tab buttons
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // Show the selected tab content and mark the button as active
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
