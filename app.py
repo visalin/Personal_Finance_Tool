@@ -54,7 +54,9 @@ def add_expense():
         category = request.form.get('category')
         date_str = request.form.get('date')
         date=datetime.strptime(date_str, '%Y-%m-%d').date()  # Convert string to date object
-        new_expense = Expense(user_id=1, description=description, amount=amount, category=category, date=date)  # Assuming user ID 1 for now
+        userid = session['user_id']
+
+        new_expense = Expense(user_id=userid, description=description, amount=amount, category=category, date=date)  # Assuming user ID 1 for now
         db.session.add(new_expense)
         db.session.commit()
         flash('Expense added successfully!', 'success')
