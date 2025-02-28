@@ -1,4 +1,7 @@
 flask
-sqlalchemy
 pylance
-flask_sqlalchemy
+flask-sqlalchemy
+mysql-connector-python
+python-dotenv
+passlib
+mysqlclient
