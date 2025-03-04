@@ -35,48 +35,54 @@
         .tab-content.active {
             display: block;
         }
+
+        .chart-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+                    }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="dashboard-page">
-   
-        <!-- Flash messages section -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flashes">
-            {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        {% endwith %}
-        <div class="h1">
-            <header><br>
-            <h1 align-text="center">Personal Finance Dashboard</h1>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px;">
-                <h2>Welcome, {{ username }}!</h2>
-                <h2><a href="/logout">Logout</a></h2>
-            </div>
-            </header>
+                                 <!-- Flash messages section -->
+                                 {% with messages = get_flashed_messages(with_categories=true) %}
+                                 {% if messages %}
+                                     <ul class="flashes">
+                                     {% for category, message in messages %}
+                                     <li class="{{ category }}">{{ message }}</li>
+                                     {% endfor %}
+                                     </ul>
+                                 {% endif %}
+                                 {% endwith %}
+    <div class="h1">
+        <header><br>
+        <h1 align-text="center">Personal Finance Dashboard</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px;">
+            <h2>Welcome, {{ username }}!</h2>
+            <h2><a href="/logout">Logout</a></h2>
         </div>
+        </header>
+    </div>
     <div class="dashboard-container">
         <div class="tab-container">
             <div class="tabs">
                 <button class="tab-button active" onclick="openTab(event, 'expenses')">Expenses</button>
                 <button class="tab-button" onclick="openTab(event, 'budget')">Budget</button>
+                <button class="tab-button" onclick="openTab(event, 'financial_goals')">Financial Goals</button>
             </div>
 
             <div id="expenses" class="tab-content active">
                 <div style="display: flex; justify-content:space-between;">
                     <h2>Expenses</h2>
                     <a href="/add_expense" class="action-button">Add New Expense</a>
-                    
                 </div>
                 <div class="expenses-list">
                     <!-- Expenses will be populated here -->
                     {% if expenses %}
                     <table style="border: 1px solid #ddd;">
                         <thead>
-                            <tr >
+                            <tr>
                                 <th style="border: 1px solid #ddd;">Date</th>
                                 <th style="border: 1px solid #ddd;">Category</th>
                                 <th style="border: 1px solid #ddd;">Amount</th>
@@ -85,7 +91,7 @@
                         </thead>
                         <tbody>
                             {% for expense in expenses %}
-                            <tr >
+                            <tr>
                                 <td style="border: 1px solid #ddd;">{{ expense.date }}</td>
                                 <td style="border: 1px solid #ddd;">{{ expense.category }}</td>
                                 <td style="border: 1px solid #ddd;">${{ "%.2f"|format(expense.amount) }}</td>
@@ -102,13 +108,138 @@
 
             <div id="budget" class="tab-content">
                 <h2>Budget</h2>
-                <div class="budget-section">
-                    <!-- Budget information will be added here in future updates -->
-                    <p>Budget tracking feature coming soon!</p>
-                </div>
+                <form method="POST" action="/budget">
+                    <label for="amount">Amount:</label>
+                    <input type="text" id="amount" name="amount" required>
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" required>
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" required>
+                    <button type="submit">Set Budget</button>
+                </form>
             </div>
+
+            <div id="financial_goals" class="tab-content">
+                <div>
+                    <h2>Financial Goals</h2>
+                    <form method="POST" action="/financial_goals">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" name="description" required>
+                        <label for="category">Category:</label>
+                        <select id="category" name="category" required>
+                            {% for category in categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="target_amount">Target Amount:</label>
+                        <input type="text" id="target_amount" name="target_amount" required>
+                        <label for="target_date">Target Date:</label>
+                        <input type="date" id="target_date" name="target_date" required>
+                        <button type="submit">Set Goal</button>
+                    </form>
+                    <br><br><br>
+                </div>
+                <h2>Goals Tracker</h2><br><br>
+                <div style="display: flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        {% if financial_goals %}
+                        <table style="border: 1px solid #ddd;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid #ddd;">Description</th>
+                                    <th style="border: 1px solid #ddd;">Category</th>
+                                    <th style="border: 1px solid #ddd;">Target Amount</th>
+                                    <th style="border: 1px solid #ddd;">Current Amount</th>
+                                    <th style="border: 1px solid #ddd;">Target Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for goal in financial_goals %}
+                                <tr>
+                                    <td style="border: 1px solid #ddd;">{{ goal.description }}</td>
+                                    <td style="border: 1px solid #ddd;">{{ goal.category }}</td>
+                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.target_amount) }}</td>
+                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.current_amount) }}</td>
+                                    <td style="border: 1px solid #ddd;">{{ goal.target_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container"; style="display:flex; margin-right: 300px;">
+                        <canvas id="goalsChart"></canvas>
+                    </div>
+                </div> 
+            </div>
+            <script>
+                    var ctx = document.getElementById('goalsChart').getContext('2d');
+                    var goalsData = {
+                        labels: [
+                            {% for goal in financial_goals %}
+                                '{{ goal.category }}',
+                            {% endfor %}
+                        ],
+                        datasets: [{
+                            label: 'Financial Goals',
+                            data: [
+                                {% for goal in financial_goals %}
+                                    {{ goal.target_amount }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)', // Light red with higher opacity
+                                    'rgba(54, 162, 235, 0.8)', // Strong blue
+                                    'rgba(255, 206, 86, 0.8)', // Bright yellow
+                                    'rgba(75, 192, 192, 0.8)', // Strong cyan
+                                    'rgba(153, 102, 255, 0.8)', // Vibrant purple
+                                    'rgba(255, 159, 64, 0.8)'  // Warm orange
+                            ],
+                            borderColor: [
+                            'rgba(255, 99, 132, 1)',  // Strong red border
+                            'rgba(54, 162, 235, 1)',  // Bright blue border
+                            'rgba(255, 206, 86, 1)',  // Yellow border
+                            'rgba(75, 192, 192, 1)',  // Cyan border
+                            'rgba(153, 102, 255, 1)', // Purple border
+                            'rgba(255, 159, 64, 1)'   // Orange border
+                            ],
+                            borderWidth: 3
+                        }]
+                    };
+                    var goalsChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: goalsData,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                                font: {
+                                                    size: 16, // Increase the font size for the legend
+                                                    weight: 'bold' // Make the legend text bold
+                                                },
+                                                color: 'blue' // Set the legend text color
+                                            }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Financial Goals',
+                                    font: {
+                                            size: 24, // Increase the title font size
+                                            weight: 'bold' // Make the title text bold
+                                          },
+                                        color: 'green' // Set the title color to green
+                                    
+                                }
+                            }
+                        },
+                    });
+                </script>
+                {% else %}
+                <p>No financial goals set yet.</p>
+                {% endif %}
+            
         </div>
-    
     </div>
     <script>
         function openTab(evt, tabName) {

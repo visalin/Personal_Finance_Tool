@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from functools import wraps
@@ -22,6 +23,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.environ['DB_USER']}:{os.en
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Create a CryptContext with the scrypt scheme, matching your hash format
 pwd_context = CryptContext(
@@ -29,6 +31,8 @@ pwd_context = CryptContext(
     default="scrypt",
     hash__scrypt__salt_size=32
 )
+
+categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'kidToys','KidEducation','KidClothing','KidFood','KidHealth','KidTransport','KidUtilities','KidEntertainment','KidOthers','CreditCardBill','Loan','Insurance','Rent','Mortgage','Others']
 
 
 class User(db.Model):
@@ -49,6 +53,22 @@ class Expense(db.Model):
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow, nullable=False)  
+
+class Budget(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+
+class FinancialGoal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(100), nullable=False)
+    target_amount = db.Column(db.Float, nullable=False)
+    current_amount = db.Column(db.Float, default=0.0)
+    target_date = db.Column(db.Date, nullable=False)
 
 # Initialize the database
 @app.before_request
@@ -74,11 +94,14 @@ def dashboard():
     user_id = session['user_id']
     expenses = Expense.query.filter_by(user_id=user_id).order_by(Expense.date.desc()).all()
     user = User.query.get(user_id)
-    return render_template('dashboard.html', expenses=expenses, username=user.username)
+    financial_goals = FinancialGoal.query.filter_by(user_id=user_id).all()
+    categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidToys', 'KidEducation', 'KidClothing', 'KidFood', 'KidHealth', 'KidTransport', 'KidUtilities', 'KidEntertainment', 'KidOthers', 'CreditCardBill', 'Loan', 'Insurance', 'Rent', 'Mortgage', 'Others']
+    return render_template('dashboard.html', expenses=expenses, username=user.username, financial_goals=financial_goals, categories=categories)
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 @login_required
 def add_expense():
+    #categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'kidToys','KidEducation','KidClothing','KidFood','KidHealth','KidTransport','KidUtilities','KidEntertainment','KidOthers','CreditCardBill','Loan','Insurance','Rent','Mortgage','Others']
     if request.method == 'POST':
         description = request.form.get('description')
         amount = request.form.get('amount')
@@ -103,7 +126,7 @@ def add_expense():
         db.session.commit()
         flash('Expense added successfully!', 'success')
         return redirect(url_for('add_expense'))
-    return render_template('add_expense.html')
+    return render_template('add_expense.html',categories=categories)
 
 # User registration and login routes
 @app.route('/register', methods=['GET', 'POST'])  
@@ -143,6 +166,71 @@ def logout():
     session.pop('user_id', None)  
     flash('You have been logged out.', 'success')  
     return redirect(url_for('login'))  
+
+
+@app.route('/budget', methods=['GET', 'POST'])
+@login_required
+def budget():
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+
+        if not amount or not start_date_str or not end_date_str:
+            flash('All fields are required!', 'danger')
+            return redirect(url_for('dashboard'))
+
+        try:
+            amount = float(amount)
+        except ValueError:
+            flash('Invalid amount entered!', 'danger')
+            return redirect(url_for('dashboard'))
+
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        user_id = session['user_id']
+
+        new_budget = Budget(user_id=user_id, amount=amount, start_date=start_date, end_date=end_date)
+        db.session.add(new_budget)
+        db.session.commit()
+        flash('Budget set successfully!', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('dashboard.html')
+
+@app.route('/financial_goals', methods=['GET', 'POST'])
+@login_required
+def financial_goals():
+    user_id = session['user_id']
+    #categories2 = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidToys', 'KidEducation', 'KidClothing', 'KidFood', 'KidHealth', 'KidTransport', 'KidUtilities', 'KidEntertainment', 'KidOthers', 'CreditCardBill', 'Loan', 'Insurance', 'Rent', 'Mortgage', 'Others']
+    
+    if request.method == 'POST':
+        description = request.form.get('description')
+        category = request.form.get('category')
+        target_amount = request.form.get('target_amount')
+        target_date_str = request.form.get('target_date')
+
+        if not description or not category or not target_amount or not target_date_str:
+            flash('All fields are required!', 'danger')
+            return redirect(url_for('dashboard'))
+
+        try:
+            target_amount = float(target_amount)
+        except ValueError:
+            flash('Invalid target amount entered!', 'danger')
+            return redirect(url_for('dashboard'))
+
+        target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date()
+
+        new_goal = FinancialGoal(user_id=user_id, description=description, category=category, target_amount=target_amount, target_date=target_date)
+        db.session.add(new_goal)
+        db.session.commit()
+        flash('Financial goal set successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    financial_goals = FinancialGoal.query.filter_by(user_id=user_id).all()
+    return render_template('dashboard.html',  categories=categories, financial_goals=financial_goals)
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)
