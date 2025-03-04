@@ -40,21 +40,21 @@
             position: relative;
             width: 300px;
             height: 300px;
-                    }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="dashboard-page">
-                                 <!-- Flash messages section -->
-                                 {% with messages = get_flashed_messages(with_categories=true) %}
-                                 {% if messages %}
-                                     <ul class="flashes">
-                                     {% for category, message in messages %}
-                                     <li class="{{ category }}">{{ message }}</li>
-                                     {% endfor %}
-                                     </ul>
-                                 {% endif %}
-                                 {% endwith %}
+    <!-- Flash messages section -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
     <div class="h1">
         <header><br>
         <h1 align-text="center">Personal Finance Dashboard</h1>
@@ -69,7 +69,7 @@
             <div class="tabs">
                 <button class="tab-button active" onclick="openTab(event, 'expenses')">Expenses</button>
                 <button class="tab-button" onclick="openTab(event, 'budget')">Budget</button>
-                <button class="tab-button" onclick="openTab(event, 'financial_goals')">Financial Goals</button>
+                <button class="tab-button" onclick="openTab(event, 'budget_categories')">Budget Categories</button>
             </div>
 
             <div id="expenses" class="tab-content active">
@@ -119,44 +119,40 @@
                 </form>
             </div>
 
-            <div id="financial_goals" class="tab-content">
+            <div id="budget_categories" class="tab-content">
                 <div>
-                    <h2>Financial Goals</h2>
-                    <form method="POST" action="/financial_goals">
-                        <label for="description">Description:</label>
-                        <input type="text" id="description" name="description" required>
+                    <h2>Budget Categories</h2>
+                    <form method="POST" action="/budget_categories">
                         <label for="category">Category:</label>
                         <select id="category" name="category" required>
                             {% for category in categories %}
                                     <option value="{{ category }}">{{ category }}</option>
                             {% endfor %}
                         </select>
-                        <label for="target_amount">Target Amount:</label>
+                        <label for="target_amount">Budget Amount:</label>
                         <input type="text" id="target_amount" name="target_amount" required>
-                        <label for="target_date">Target Date:</label>
-                        <input type="date" id="target_date" name="target_date" required>
-                        <button type="submit">Set Goal</button>
+                        <label for="target_date">Month</label>
+                        <input type="month" id="target_date" name="target_date" required>
+                        <button type="submit">Set Budget </button>
                     </form>
                     <br><br><br>
                 </div>
                 <h2>Goals Tracker</h2><br><br>
                 <div style="display: flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        {% if financial_goals %}
+                        {% if budget_categories %}
                         <table style="border: 1px solid #ddd;">
                             <thead>
                                 <tr>
-                                    <th style="border: 1px solid #ddd;">Description</th>
                                     <th style="border: 1px solid #ddd;">Category</th>
-                                    <th style="border: 1px solid #ddd;">Target Amount</th>
-                                    <th style="border: 1px solid #ddd;">Current Amount</th>
-                                    <th style="border: 1px solid #ddd;">Target Date</th>
+                                    <th style="border: 1px solid #ddd;">Budget Amount</th>
+                                    <th style="border: 1px solid #ddd;">Remaining Amount</th>
+                                    <th style="border: 1px solid #ddd;">Month</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for goal in financial_goals %}
+                                {% for goal in budget_categories %}
                                 <tr>
-                                    <td style="border: 1px solid #ddd;">{{ goal.description }}</td>
                                     <td style="border: 1px solid #ddd;">{{ goal.category }}</td>
                                     <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.target_amount) }}</td>
                                     <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.current_amount) }}</td>
@@ -175,14 +171,14 @@
                     var ctx = document.getElementById('goalsChart').getContext('2d');
                     var goalsData = {
                         labels: [
-                            {% for goal in financial_goals %}
+                            {% for goal in budget_categories %}
                                 '{{ goal.category }}',
                             {% endfor %}
                         ],
                         datasets: [{
-                            label: 'Financial Goals',
+                            label: 'Budget Categories',
                             data: [
-                                {% for goal in financial_goals %}
+                                {% for goal in budget_categories %}
                                     {{ goal.target_amount }},
                                 {% endfor %}
                             ],
@@ -212,10 +208,10 @@
                             responsive: true,
                             plugins: {
                                 legend: {
-                                    position: 'bottom',
+                                    position: 'right',
                                     labels: {
                                                 font: {
-                                                    size: 16, // Increase the font size for the legend
+                                                    size: 12, // Increase the font size for the legend
                                                     weight: 'bold' // Make the legend text bold
                                                 },
                                                 color: 'blue' // Set the legend text color
@@ -223,7 +219,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'Financial Goals',
+                                    text: 'Budget Categories',
                                     font: {
                                             size: 24, // Increase the title font size
                                             weight: 'bold' // Make the title text bold
@@ -236,7 +232,7 @@
                     });
                 </script>
                 {% else %}
-                <p>No financial goals set yet.</p>
+                <p>No budget categories set yet.</p>
                 {% endif %}
             
         </div>

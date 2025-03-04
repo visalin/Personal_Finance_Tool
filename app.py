@@ -32,8 +32,7 @@ pwd_context = CryptContext(
     hash__scrypt__salt_size=32
 )
 
-categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'kidToys','KidEducation','KidClothing','KidFood','KidHealth','KidTransport','KidUtilities','KidEntertainment','KidOthers','CreditCardBill','Loan','Insurance','Rent','Mortgage','Others']
-
+categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidToys', 'KidEducation', 'KidClothing', 'KidFood', 'KidHealth', 'KidTransport', 'KidUtilities', 'KidEntertainment', 'KidOthers', 'CreditCardBill', 'Loan', 'Insurance', 'Rent', 'Mortgage', 'Others']
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,14 +60,14 @@ class Budget(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
 
-class FinancialGoal(db.Model):
+class BudgetCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    description = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     target_amount = db.Column(db.Float, nullable=False)
     current_amount = db.Column(db.Float, default=0.0)
     target_date = db.Column(db.Date, nullable=False)
+    user = db.relationship('User', backref=db.backref('budget_categories', lazy=True))
 
 # Initialize the database
 @app.before_request
@@ -94,14 +93,18 @@ def dashboard():
     user_id = session['user_id']
     expenses = Expense.query.filter_by(user_id=user_id).order_by(Expense.date.desc()).all()
     user = User.query.get(user_id)
-    financial_goals = FinancialGoal.query.filter_by(user_id=user_id).all()
-    categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidToys', 'KidEducation', 'KidClothing', 'KidFood', 'KidHealth', 'KidTransport', 'KidUtilities', 'KidEntertainment', 'KidOthers', 'CreditCardBill', 'Loan', 'Insurance', 'Rent', 'Mortgage', 'Others']
-    return render_template('dashboard.html', expenses=expenses, username=user.username, financial_goals=financial_goals, categories=categories)
+    budget_categories = BudgetCategory.query.filter_by(user_id=user_id).all()
+
+    # Calculate the remaining amount for each budget category
+    for category in budget_categories:
+        total_expenses = db.session.query(db.func.sum(Expense.amount)).filter_by(user_id=user_id, category=category.category).scalar() or 0.0
+        category.current_amount = category.target_amount - total_expenses
+
+    return render_template('dashboard.html', expenses=expenses, username=user.username, budget_categories=budget_categories, categories=categories)
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 @login_required
 def add_expense():
-    #categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'kidToys','KidEducation','KidClothing','KidFood','KidHealth','KidTransport','KidUtilities','KidEntertainment','KidOthers','CreditCardBill','Loan','Insurance','Rent','Mortgage','Others']
     if request.method == 'POST':
         description = request.form.get('description')
         amount = request.form.get('amount')
@@ -126,7 +129,7 @@ def add_expense():
         db.session.commit()
         flash('Expense added successfully!', 'success')
         return redirect(url_for('add_expense'))
-    return render_template('add_expense.html',categories=categories)
+    return render_template('add_expense.html', categories=categories)
 
 # User registration and login routes
 @app.route('/register', methods=['GET', 'POST'])  
@@ -197,19 +200,17 @@ def budget():
         return redirect(url_for('dashboard'))
     return render_template('dashboard.html')
 
-@app.route('/financial_goals', methods=['GET', 'POST'])
+@app.route('/budget_categories', methods=['GET', 'POST'])
 @login_required
-def financial_goals():
+def budget_categories():
     user_id = session['user_id']
-    #categories2 = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidToys', 'KidEducation', 'KidClothing', 'KidFood', 'KidHealth', 'KidTransport', 'KidUtilities', 'KidEntertainment', 'KidOthers', 'CreditCardBill', 'Loan', 'Insurance', 'Rent', 'Mortgage', 'Others']
     
     if request.method == 'POST':
-        description = request.form.get('description')
         category = request.form.get('category')
         target_amount = request.form.get('target_amount')
         target_date_str = request.form.get('target_date')
 
-        if not description or not category or not target_amount or not target_date_str:
+        if not category or not target_amount or not target_date_str:
             flash('All fields are required!', 'danger')
             return redirect(url_for('dashboard'))
 
@@ -219,19 +220,19 @@ def financial_goals():
             flash('Invalid target amount entered!', 'danger')
             return redirect(url_for('dashboard'))
 
-        target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date()
+        target_date = datetime.strptime(target_date_str, '%Y-%m').date()
 
-        new_goal = FinancialGoal(user_id=user_id, description=description, category=category, target_amount=target_amount, target_date=target_date)
-        db.session.add(new_goal)
+        # Create a new Budget Category
+        new_category = BudgetCategory(user_id=user_id, category=category, target_amount=target_amount, target_date=target_date)
+        db.session.add(new_category)
         db.session.commit()
-        flash('Financial goal set successfully!', 'success')
+        flash('Budget category set successfully!', 'success')
         return redirect(url_for('dashboard'))
 
-    financial_goals = FinancialGoal.query.filter_by(user_id=user_id).all()
-    return render_template('dashboard.html',  categories=categories, financial_goals=financial_goals)
-
+    # Get all budget categories for the user
+    budget_categories = BudgetCategory.query.filter_by(user_id=user_id).all()
+    return render_template('dashboard.html')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
-
+    app.run(host='0.0.0.0', debug=True)
