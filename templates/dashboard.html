@@ -38,8 +38,44 @@
 
         .chart-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 100%;
+            height: 400px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -67,12 +103,12 @@
     <div class="dashboard-container">
         <div class="tab-container">
             <div class="tabs">
-                <button class="tab-button active" onclick="openTab(event, 'expenses')">Expenses</button>
-                <button class="tab-button" onclick="openTab(event, 'budget')">Budget</button>
+                <button class="tab-button active" onclick="openTab(event, 'overview')">Overview</button>
+                <button class="tab-button" onclick="openTab(event, 'expenses')">Expenses</button>
                 <button class="tab-button" onclick="openTab(event, 'budget_categories')">Budget Categories</button>
             </div>
 
-            <div id="expenses" class="tab-content active">
+            <div id="expenses" class="tab-content">
                 <div style="display: flex; justify-content:space-between;">
                     <h2>Expenses</h2>
                     <a href="/add_expense" class="action-button">Add New Expense</a>
@@ -80,7 +116,7 @@
                 <div class="expenses-list">
                     <!-- Expenses will be populated here -->
                     {% if expenses %}
-                    <table style="border: 1px solid #ddd;">
+                        <table style="border: 1px solid #ddd;">
                         <thead>
                             <tr>
                                 <th style="border: 1px solid #ddd;">Date</th>
@@ -106,17 +142,36 @@
                 </div>
             </div>
 
-            <div id="budget" class="tab-content">
-                <h2>Budget</h2>
-                <form method="POST" action="/budget">
-                    <label for="amount">Amount:</label>
-                    <input type="text" id="amount" name="amount" required>
-                    <label for="start_date">Start Date:</label>
-                    <input type="date" id="start_date" name="start_date" required>
-                    <label for="end_date">End Date:</label>
-                    <input type="date" id="end_date" name="end_date" required>
-                    <button type="submit">Set Budget</button>
-                </form>
+            <div id="overview" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2>Overview</h2>
+                        <table style="border: 1px solid #ddd;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid #ddd;">Month</th>
+                                    <th style="border: 1px solid #ddd;">Total Budget</th>
+                                    <th style="border: 1px solid #ddd;">Total Expenses</th>
+                                    <th style="border: 1px solid #ddd;">Savings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for summary in budget_summary %}
+                                <tr>
+                                    <td style="border: 1px solid #ddd;">{{ summary.month }}</td>
+                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(summary.total_budget) }}</td>
+                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(summary.total_expenses) }}</td>
+                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(summary.savings) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="action-button" onclick="openModal()">Set Monthly Budget</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="overviewChart"></canvas>
+                </div>
             </div>
 
             <div id="budget_categories" class="tab-content">
@@ -133,7 +188,7 @@
                         <input type="text" id="target_amount" name="target_amount" required>
                         <label for="target_date">Month</label>
                         <input type="month" id="target_date" name="target_date" required>
-                        <button type="submit">Set Budget </button>
+                        <button type="submit">Set Budget</button>
                     </form>
                     <br><br><br>
                 </div>
@@ -141,7 +196,7 @@
                 <div style="display: flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         {% if budget_categories %}
-                        <table style="border: 1px solid #ddd;">
+                            <table style="border: 1px solid #ddd;">
                             <thead>
                                 <tr>
                                     <th style="border: 1px solid #ddd;">Category</th>
@@ -152,23 +207,94 @@
                             </thead>
                             <tbody>
                                 {% for goal in budget_categories %}
-                                <tr>
-                                    <td style="border: 1px solid #ddd;">{{ goal.category }}</td>
-                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.target_amount) }}</td>
-                                    <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.current_amount) }}</td>
-                                    <td style="border: 1px solid #ddd;">{{ goal.target_date }}</td>
-                                </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd;">{{ goal.category }}</td>
+                                        <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.target_amount) }}</td>
+                                        <td style="border: 1px solid #ddd;">${{ "%.2f"|format(goal.current_amount) }}</td>
+                                        <td style="border: 1px solid #ddd;">{{ goal.target_date.strftime('%B %Y') }}</td>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% else %}
+                        <p>No budget categories set yet.</p>
+                        {% endif %}
                     </div>
-                    <div class="chart-container"; style="display:flex; margin-right: 300px;">
+                    <div class="chart-container">
                         <canvas id="goalsChart"></canvas>
                     </div>
                 </div> 
             </div>
             <script>
-                    var ctx = document.getElementById('goalsChart').getContext('2d');
+                document.addEventListener('DOMContentLoaded', function() {
+                    var ctxOverview = document.getElementById('overviewChart').getContext('2d');
+                    var overviewData = {
+                        labels: [
+                            {% for summary in budget_summary %}
+                                '{{ summary.month }}',
+                            {% endfor %}
+                        ],
+                        datasets: [{
+                            label: 'Total Budget',
+                            data: [
+                                {% for summary in budget_summary %}
+                                    {{ summary.total_budget }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)', // Blue
+                            borderColor: 'rgba(54, 162, 235, 1)', // Blue
+                            borderWidth: 1
+                        }, {
+                            label: 'Total Expenses',
+                            data: [
+                                {% for summary in budget_summary %}
+                                    {{ summary.total_expenses }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)', // Red
+                            borderColor: 'rgba(255, 99, 132, 1)', // Red
+                            borderWidth: 1
+                        }, {
+                            label: 'Savings',
+                            data: [
+                                {% for summary in budget_summary %}
+                                    {{ summary.savings }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: 'rgba(75, 192, 192, 0.8)', // Green
+                            borderColor: 'rgba(75, 192, 192, 1)', // Green
+                            borderWidth: 1
+                        }]
+                    };
+
+                    var overviewChart = new Chart(ctxOverview, {
+                        type: 'bar',
+                        data: overviewData,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Monthly Overview',
+                                    font: {
+                                        size: 24,
+                                        weight: 'bold'
+                                    },
+                                    color: 'black'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    var ctxGoals = document.getElementById('goalsChart').getContext('2d');
                     var goalsData = {
                         labels: [
                             {% for goal in budget_categories %}
@@ -183,25 +309,26 @@
                                 {% endfor %}
                             ],
                             backgroundColor: [
-                                    'rgba(255, 99, 132, 0.8)', // Light red with higher opacity
-                                    'rgba(54, 162, 235, 0.8)', // Strong blue
-                                    'rgba(255, 206, 86, 0.8)', // Bright yellow
-                                    'rgba(75, 192, 192, 0.8)', // Strong cyan
-                                    'rgba(153, 102, 255, 0.8)', // Vibrant purple
-                                    'rgba(255, 159, 64, 0.8)'  // Warm orange
+                                'rgba(255, 99, 132, 0.8)', // Light red with higher opacity
+                                'rgba(54, 162, 235, 0.8)', // Strong blue
+                                'rgba(255, 206, 86, 0.8)', // Bright yellow
+                                'rgba(75, 192, 192, 0.8)', // Strong cyan
+                                'rgba(153, 102, 255, 0.8)', // Vibrant purple
+                                'rgba(255, 159, 64, 0.8)'  // Warm orange
                             ],
                             borderColor: [
-                            'rgba(255, 99, 132, 1)',  // Strong red border
-                            'rgba(54, 162, 235, 1)',  // Bright blue border
-                            'rgba(255, 206, 86, 1)',  // Yellow border
-                            'rgba(75, 192, 192, 1)',  // Cyan border
-                            'rgba(153, 102, 255, 1)', // Purple border
-                            'rgba(255, 159, 64, 1)'   // Orange border
+                                'rgba(255, 99, 132, 1)',  // Strong red border
+                                'rgba(54, 162, 235, 1)',  // Bright blue border
+                                'rgba(255, 206, 86, 1)',  // Yellow border
+                                'rgba(75, 192, 192, 1)',  // Cyan border
+                                'rgba(153, 102, 255, 1)', // Purple border
+                                'rgba(255, 159, 64, 1)'   // Orange border
                             ],
                             borderWidth: 3
                         }]
                     };
-                    var goalsChart = new Chart(ctx, {
+
+                    var goalsChart = new Chart(ctxGoals, {
                         type: 'pie',
                         data: goalsData,
                         options: {
@@ -210,53 +337,70 @@
                                 legend: {
                                     position: 'right',
                                     labels: {
-                                                font: {
-                                                    size: 12, // Increase the font size for the legend
-                                                    weight: 'bold' // Make the legend text bold
-                                                },
-                                                color: 'blue' // Set the legend text color
-                                            }
+                                        font: {
+                                            size: 12, // Increase the font size for the legend
+                                            weight: 'bold' // Make the legend text bold
+                                        },
+                                        color: 'blue' // Set the legend text color
+                                    }
                                 },
                                 title: {
                                     display: true,
                                     text: 'Budget Categories',
                                     font: {
-                                            size: 24, // Increase the title font size
-                                            weight: 'bold' // Make the title text bold
-                                          },
-                                        color: 'green' // Set the title color to green
-                                    
+                                        size: 24, // Increase the title font size
+                                        weight: 'bold' // Make the title text bold
+                                    },
+                                    color: 'green' // Set the title color to green
                                 }
                             }
-                        },
+                        }
                     });
-                </script>
-                {% else %}
-                <p>No budget categories set yet.</p>
-                {% endif %}
-            
+
+                    function openModal() {
+                        document.getElementById('budgetModal').style.display = 'block';
+                    }
+
+                    function closeModal() {
+                        document.getElementById('budgetModal').style.display = 'none';
+                    }
+                });
+
+                function openTab(evt, tabName) {
+                    var i, tabcontent, tablinks;
+                    
+                    // Hide all tab content
+                    tabcontent = document.getElementsByClassName("tab-content");
+                    for (i = 0; i < tabcontent.length; i++) {
+                        tabcontent[i].classList.remove("active");
+                    }
+                    
+                    // Remove active class from all tab buttons
+                    tablinks = document.getElementsByClassName("tab-button");
+                    for (i = 0; i < tablinks.length; i++) {
+                        tablinks[i].classList.remove("active");
+                    }
+                    
+                    // Show the selected tab content and mark the button as active
+                    document.getElementById(tabName).classList.add("active");
+                    evt.currentTarget.classList.add("active");
+                }
+            </script>
         </div>
     </div>
-    <script>
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            
-            // Hide all tab content
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].classList.remove("active");
-            }
-            
-            // Remove active class from all tab buttons
-            tablinks = document.getElementsByClassName("tab-button");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
-            
-            // Show the selected tab content and mark the button as active
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-    </script>
+
+    <!-- The Modal -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <form method="POST" action="/Setbudget">
+                <label for="amount">Amount:</label>
+                <input type="text" id="amount" name="amount" required>
+                <label for="month">Month:</label>
+                <input type="month" id="month" name="month" required>
+                <button type="submit">Set Budget</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
