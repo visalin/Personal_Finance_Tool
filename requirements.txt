@@ -5,3 +5,5 @@ mysql-connector-python
 python-dotenv
 passlib
 mysqlclient
+Flask-Migrate
+pymysql
