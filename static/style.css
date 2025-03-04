@@ -187,3 +187,48 @@ a:hover {
     color: #1938d6;
     transform: translateY(-2px);
 }
+
+/*Modal Content for Overview Budget button */
+
+.modal {
+    display: none;
+    position:bottom;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: #62d5e4 0%;
+    background-color: #ff8c00 100%;
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/*Pie Chart Styles */
+.chart-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}

@@ -53,12 +53,11 @@ class Expense(db.Model):
     category = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow, nullable=False)  
 
-class Budget(db.Model):
+class SetBudget(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    start_date = db.Column(db.Date, nullable=False)
-    end_date = db.Column(db.Date, nullable=False)
+    month = db.Column(db.String(7), nullable=False)  # Format: YYYY-MM
 
 class BudgetCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -93,14 +92,37 @@ def dashboard():
     user_id = session['user_id']
     expenses = Expense.query.filter_by(user_id=user_id).order_by(Expense.date.desc()).all()
     user = User.query.get(user_id)
+
+    # Calculate total budget, expenses, and savings for all months
+    budget_data = db.session.query(
+        SetBudget.month,
+        db.func.sum(SetBudget.amount).label('total_budget'),
+        db.func.sum(Expense.amount).label('total_expenses')
+    ).outerjoin(Expense, db.and_(
+        SetBudget.user_id == Expense.user_id,
+        db.func.date_format(Expense.date, '%Y-%m') == SetBudget.month
+    )).filter(SetBudget.user_id == user_id).group_by(SetBudget.month).all()
+
+    budget_summary = []
+    for data in budget_data:
+        total_budget = data.total_budget or 0.0
+        total_expenses = data.total_expenses or 0.0
+        savings = total_budget - total_expenses
+        budget_summary.append({
+            'month': data.month,
+            'total_budget': total_budget,
+            'total_expenses': total_expenses,
+            'savings': savings
+        })
+
     budget_categories = BudgetCategory.query.filter_by(user_id=user_id).all()
 
     # Calculate the remaining amount for each budget category
     for category in budget_categories:
-        total_expenses = db.session.query(db.func.sum(Expense.amount)).filter_by(user_id=user_id, category=category.category).scalar() or 0.0
-        category.current_amount = category.target_amount - total_expenses
+        total_expenses_category = db.session.query(db.func.sum(Expense.amount)).filter_by(user_id=user_id, category=category.category).scalar() or 0.0
+        category.current_amount = category.target_amount - total_expenses_category
 
-    return render_template('dashboard.html', expenses=expenses, username=user.username, budget_categories=budget_categories, categories=categories)
+    return render_template('dashboard.html', expenses=expenses, username=user.username, budget_categories=budget_categories, categories=categories, budget_summary=budget_summary)
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 @login_required
@@ -171,15 +193,14 @@ def logout():
     return redirect(url_for('login'))  
 
 
-@app.route('/budget', methods=['GET', 'POST'])
+@app.route('/Setbudget', methods=['GET', 'POST'])
 @login_required
-def budget():
+def Setbudget():
     if request.method == 'POST':
         amount = request.form.get('amount')
-        start_date_str = request.form.get('start_date')
-        end_date_str = request.form.get('end_date')
+        month = request.form.get('month')
 
-        if not amount or not start_date_str or not end_date_str:
+        if not amount or not month:
             flash('All fields are required!', 'danger')
             return redirect(url_for('dashboard'))
 
@@ -189,12 +210,16 @@ def budget():
             flash('Invalid amount entered!', 'danger')
             return redirect(url_for('dashboard'))
 
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         user_id = session['user_id']
 
-        new_budget = Budget(user_id=user_id, amount=amount, start_date=start_date, end_date=end_date)
-        db.session.add(new_budget)
+        # Check if a budget already exists for the month
+        existing_budget = SetBudget.query.filter_by(user_id=user_id, month=month).first()
+        if existing_budget:
+            existing_budget.amount = amount
+        else:
+            new_budget = SetBudget(user_id=user_id, amount=amount, month=month)
+            db.session.add(new_budget)
+
         db.session.commit()
         flash('Budget set successfully!', 'success')
         return redirect(url_for('dashboard'))
@@ -231,7 +256,7 @@ def budget_categories():
 
     # Get all budget categories for the user
     budget_categories = BudgetCategory.query.filter_by(user_id=user_id).all()
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', categories=categories, budget_categories=budget_categories)
 
 
 if __name__ == '__main__':
