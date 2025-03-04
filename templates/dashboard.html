@@ -42,41 +42,7 @@
             height: 400px;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
-        }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -241,9 +207,9 @@
                                     {{ summary.total_budget }},
                                 {% endfor %}
                             ],
-                            backgroundColor: 'rgba(54, 162, 235, 0.8)', // Blue
-                            borderColor: 'rgba(54, 162, 235, 1)', // Blue
-                            borderWidth: 1
+                            backgroundColor: 'rgba(255, 206, 86, 0.8)', // Bright yellow
+                            borderColor: 'rgba(255, 99, 132, 1)',  // Strong red border
+                            borderWidth: 3
                         }, {
                             label: 'Total Expenses',
                             data: [
@@ -251,9 +217,9 @@
                                     {{ summary.total_expenses }},
                                 {% endfor %}
                             ],
-                            backgroundColor: 'rgba(255, 99, 132, 0.8)', // Red
-                            borderColor: 'rgba(255, 99, 132, 1)', // Red
-                            borderWidth: 1
+                            backgroundColor: 'rgba(153, 102, 255, 0.8)', // Vibrant purple
+                            borderColor: 'rgba(54, 162, 235, 1)',  // Bright blue border
+                            borderWidth: 3
                         }, {
                             label: 'Savings',
                             data: [
@@ -261,9 +227,9 @@
                                     {{ summary.savings }},
                                 {% endfor %}
                             ],
-                            backgroundColor: 'rgba(75, 192, 192, 0.8)', // Green
-                            borderColor: 'rgba(75, 192, 192, 1)', // Green
-                            borderWidth: 1
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)', // Strong blue
+                            borderColor: 'rgba(75, 192, 192, 1)',  // Cyan border
+                            borderWidth: 3
                         }]
                     };
 
@@ -283,7 +249,7 @@
                                         size: 24,
                                         weight: 'bold'
                                     },
-                                    color: 'black'
+                                    color: 'green'
                                 }
                             },
                             scales: {
@@ -356,14 +322,6 @@
                             }
                         }
                     });
-
-                    function openModal() {
-                        document.getElementById('budgetModal').style.display = 'block';
-                    }
-
-                    function closeModal() {
-                        document.getElementById('budgetModal').style.display = 'none';
-                    }
                 });
 
                 function openTab(evt, tabName) {
@@ -385,6 +343,15 @@
                     document.getElementById(tabName).classList.add("active");
                     evt.currentTarget.classList.add("active");
                 }
+
+
+                function openModal() {
+                    document.getElementById('budgetModal').style.display = 'block';
+                    }
+
+                function closeModal() {
+                    document.getElementById('budgetModal').style.display = 'none';
+                    }
             </script>
         </div>
     </div>
