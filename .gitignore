@@ -2,4 +2,4 @@ venv/
 *.pem
 app/certs/*
 app/certs/.gitkeep
-app/__pycache__/
+app/__pycache__/*
