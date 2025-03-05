@@ -192,23 +192,45 @@ a:hover {
 
 .modal {
     display: none;
-    position:bottom;
+    position:fixed;
     z-index: 1;
-    left: 0;
+    right: 0;
     top: 0;
-    width: 100%;
+    width: 50%;
     height: 100%;
     overflow: auto;
     background-color: #62d5e4 0%;
     background-color: #ff8c00 100%;
-    padding-top: 60px;
+    padding-top: 300px;
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: #d8c580;
     margin: 5% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid #fb3838;
+    width: 80%;
+}
+
+.modal1 {
+    display: none;
+    position:fixed;
+    z-index: 1;
+    right: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    overflow: auto;
+    background-color: #62d5e4 0%;
+    background-color: #ff8c00 100%;
+    padding-top: 400px;
+}
+
+.modal1-content {
+    background-color: #d8c580;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #fb3838;
     width: 80%;
 }
 

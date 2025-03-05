@@ -96,7 +96,7 @@ def dashboard():
     # Calculate total budget, expenses, and savings for all months
     budget_data = db.session.query(
         SetBudget.month,
-        db.func.sum(SetBudget.amount).label('total_budget'),
+        SetBudget.amount.label('total_budget'),
         db.func.sum(Expense.amount).label('total_expenses')
     ).outerjoin(Expense, db.and_(
         SetBudget.user_id == Expense.user_id,
@@ -150,7 +150,7 @@ def add_expense():
         db.session.add(new_expense)
         db.session.commit()
         flash('Expense added successfully!', 'success')
-        return redirect(url_for('add_expense'))
+        return redirect(url_for('dashboard'))
     return render_template('add_expense.html', categories=categories)
 
 # User registration and login routes
@@ -198,7 +198,9 @@ def logout():
 def Setbudget():
     if request.method == 'POST':
         amount = request.form.get('amount')
+        print (amount)
         month = request.form.get('month')
+        print (month)
 
         if not amount or not month:
             flash('All fields are required!', 'danger')
@@ -214,10 +216,13 @@ def Setbudget():
 
         # Check if a budget already exists for the month
         existing_budget = SetBudget.query.filter_by(user_id=user_id, month=month).first()
+        print (existing_budget)
         if existing_budget:
             existing_budget.amount = amount
+            print (existing_budget.amount)
         else:
             new_budget = SetBudget(user_id=user_id, amount=amount, month=month)
+            print (new_budget)
             db.session.add(new_budget)
 
         db.session.commit()
