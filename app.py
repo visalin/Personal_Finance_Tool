@@ -36,7 +36,10 @@ categories = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Health', 'KidT
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), nullable=False, unique=True)
+    firstname = db.Column(db.String(150), nullable=False, unique=True)
+    lastname = db.Column(db.String(150), nullable=False, unique=True)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    username= db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
 
     def set_password(self, password):  
@@ -122,7 +125,7 @@ def dashboard():
         total_expenses_category = db.session.query(db.func.sum(Expense.amount)).filter_by(user_id=user_id, category=category.category).scalar() or 0.0
         category.current_amount = category.target_amount - total_expenses_category
 
-    return render_template('dashboard.html', expenses=expenses, username=user.username, budget_categories=budget_categories, categories=categories, budget_summary=budget_summary)
+    return render_template('dashboard.html', expenses=expenses, firstname=user.firstname,lastname=user.lastname, budget_categories=budget_categories, categories=categories, budget_summary=budget_summary)
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 @login_required
@@ -156,11 +159,14 @@ def add_expense():
 # User registration and login routes
 @app.route('/register', methods=['GET', 'POST'])  
 def register():  
-    if request.method == 'POST':  
-        username = request.form.get('username')  
+    if request.method == 'POST': 
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        email = request.form.get('email')
+        username = request.form.get('username')   
         password = request.form.get('password')
         hashed_password = pwd_context.hash(password)  # Use scrypt hashing
-        user = User(username=username, password=hashed_password)
+        user = User(firstname=firstname,lastname=lastname,email=email,username=username, password=hashed_password)
         db.session.add(user)  
         db.session.commit()  
         flash('Registration successful! Please log in.', 'success')  
