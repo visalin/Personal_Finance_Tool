@@ -4,6 +4,8 @@ flask-sqlalchemy
 mysql-connector-python
 python-dotenv
 passlib
-mysqlclient
 Flask-Migrate
 pymysql
+pytest
+boto3
+cryptography
