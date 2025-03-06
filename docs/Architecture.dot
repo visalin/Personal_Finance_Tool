@@ -1,0 +1,16 @@
+digraph INFRA {
+  node [ color = "black", fillcolor = "#E6E6E6", height =1, style = "filled,bold,rounded", fontname = "Arial" ];
+  "RDS Database" [ label = "RDS Database
+(AWS::RDS::MYSQLDBInstance)", shape =cylinder, fillcolor = "#FFCFB3" ];
+  "AWS EC2" [ label = "AWS EC2
+(AWS::EC2)", shape =rectangle ];
+  "RDS Client" [ label = "RDS Client
+(AWS::RDS::Client)", shape =rectangle ];
+  "Application" [ label = "Application
+(Custom::FlaskApplication)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "AWS EC2" -> "Application";
+  "Application" -> "RDS Client";
+  "RDS Client" -> "IAM Authentication";
+  "IAM Authentication" -> "RDS Database";
+  
+}

@@ -20,7 +20,7 @@ The application offers comprehensive financial management features including exp
 │   │   └── *.html              # Authentication and other templates
 │   └── tests/                   # Test suite directory
 ├── docs/                        # Documentation directory
-│   └── infra.dot               # Infrastructure diagram
+│   └── Architecture.dot         # Architecture diagram
 ├── run.py                       # Application entry point
 └── requirements.txt            # Project dependencies
 ```
@@ -263,20 +263,21 @@ Component interactions:
 
 ## Infrastructure
 
-![Infrastructure diagram](./docs/infra.svg)
+![Infrastructure diagram](./docs/ArchitectureDiagram.svg)
 ### Database
 - RDS Database (AWS::RDS::DBInstance)
   - MySQL database instance for storing application data
 
 ### Security
-- SSL Certificate (AWS::ACM::Certificate)
-  - SSL certificate for secure database connections
+- IAM Authentication
+  - Connect to RDS DB securely without a password
 
 ### Application
 - Flask Application (Custom::FlaskApplication)
-  - Web application hosted on AWS
-  - Connects to RDS using IAM authentication
-  - Uses SSL for secure database communication
+  - Web application hosted on AWS EC2
+  - Connects to RDS using IAM Authentication by Using RDS Client
+
+ 
 
 ### Networking
 - AWS Region (AWS::Region)

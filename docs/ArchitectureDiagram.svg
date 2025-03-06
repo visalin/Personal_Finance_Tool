@@ -1,0 +1,66 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="232pt" height="512pt" viewBox="0.00 0.00 231.72 512">
+<g id="graph0" class="graph" transform="translate(11.43430534981303,471.847849847793) scale(0.8705505632961241)" data-name="INFRA">
+
+<polygon fill="white" stroke="none" points="-4,4 -4,-508 227.72,-508 227.72,4 -4,4"/>
+<!-- RDS Database -->
+<g id="node1" class="node" pointer-events="visible" data-name="RDS Database">
+
+<path fill="#ffcfb3" stroke="black" stroke-width="2" d="M223.58,-65.45C223.58,-69.07 173.5,-72 111.86,-72 50.21,-72 0.14,-69.07 0.14,-65.45 0.14,-65.45 0.14,-6.55 0.14,-6.55 0.14,-2.93 50.21,0 111.86,0 173.5,0 223.58,-2.93 223.58,-6.55 223.58,-6.55 223.58,-65.45 223.58,-65.45"/>
+<path fill="none" stroke="black" stroke-width="2" d="M223.58,-65.45C223.58,-61.84 173.5,-58.91 111.86,-58.91 50.21,-58.91 0.14,-61.84 0.14,-65.45"/>
+<text text-anchor="middle" x="111.86" y="-40.2" font-family="Arial" font-size="14.00">RDS Database</text>
+<text text-anchor="middle" x="111.86" y="-23.4" font-family="Arial" font-size="14.00">(AWS::RDS::MYSQLDBInstance)</text>
+</g>
+<!-- AWS EC2 -->
+<g id="node2" class="node" pointer-events="visible" data-name="AWS EC2">
+
+<path fill="#e6e6e6" stroke="black" stroke-width="2" d="M146.09,-504C146.09,-504 77.63,-504 77.63,-504 71.63,-504 65.63,-498 65.63,-492 65.63,-492 65.63,-444 65.63,-444 65.63,-438 71.63,-432 77.63,-432 77.63,-432 146.09,-432 146.09,-432 152.09,-432 158.09,-438 158.09,-444 158.09,-444 158.09,-492 158.09,-492 158.09,-498 152.09,-504 146.09,-504"/>
+<text text-anchor="middle" x="111.86" y="-472.2" font-family="Arial" font-size="14.00">AWS EC2</text>
+<text text-anchor="middle" x="111.86" y="-455.4" font-family="Arial" font-size="14.00">(AWS::EC2)</text>
+</g>
+<!-- RDS Client -->
+<g id="node3" class="node" pointer-events="visible" data-name="RDS Client">
+
+<path fill="#e6e6e6" stroke="black" stroke-width="2" d="M168.98,-288C168.98,-288 54.73,-288 54.73,-288 48.73,-288 42.73,-282 42.73,-276 42.73,-276 42.73,-228 42.73,-228 42.73,-222 48.73,-216 54.73,-216 54.73,-216 168.98,-216 168.98,-216 174.98,-216 180.98,-222 180.98,-228 180.98,-228 180.98,-276 180.98,-276 180.98,-282 174.98,-288 168.98,-288"/>
+<text text-anchor="middle" x="111.86" y="-256.2" font-family="Arial" font-size="14.00">RDS Client</text>
+<text text-anchor="middle" x="111.86" y="-239.4" font-family="Arial" font-size="14.00">(AWS::RDS::Client)</text>
+</g>
+<!-- AWS Region -->
+<g id="edge1" class="edge" data-name="AWS EC2-&gt;Application" data-comment="AWS Region">
+
+<path fill="none" stroke="black" d="M111.86,-431.7C111.86,-423.93 111.86,-415.57 111.86,-407.43"/>
+<polygon fill="black" stroke="black" points="115.36,-407.66 111.86,-397.66 108.36,-407.66 115.36,-407.66"/>
+</g>
+<!-- RDS Client&#45;&gt;AWS Region -->
+
+<!-- SSL Certificate -->
+
+<!-- Application -->
+<g id="node4" class="node" pointer-events="visible" data-name="Application">
+
+<path fill="#b7e0ff" stroke="black" stroke-width="2" d="M191.63,-396C191.63,-396 32.08,-396 32.08,-396 26.08,-396 20.08,-390 20.08,-384 20.08,-384 20.08,-336 20.08,-336 20.08,-330 26.08,-324 32.08,-324 32.08,-324 191.63,-324 191.63,-324 197.63,-324 203.63,-330 203.63,-336 203.63,-336 203.63,-384 203.63,-384 203.63,-390 197.63,-396 191.63,-396"/>
+<text text-anchor="middle" x="111.86" y="-364.2" font-family="Arial" font-size="14.00">Application</text>
+<text text-anchor="middle" x="111.86" y="-347.4" font-family="Arial" font-size="14.00">(Custom::FlaskApplication)</text>
+</g><g id="node5" class="node" pointer-events="visible" data-name="IAM Authentication" data-comment="Application">
+
+<ellipse fill="#e6e6e6" stroke="black" stroke-width="2" cx="111.86" cy="-144" rx="71.21" ry="36"/>
+<text text-anchor="middle" x="111.86" y="-139.8" font-family="Arial" font-size="14.00">IAM Authentication</text>
+</g>
+<!-- Application&#45;&gt;RDS Database -->
+<g id="edge2" class="edge" data-name="Application-&gt;RDS Client" data-comment="Application-&gt;RDS Database">
+
+<path fill="none" stroke="black" d="M111.86,-323.7C111.86,-315.93 111.86,-307.57 111.86,-299.43"/>
+<polygon fill="black" stroke="black" points="115.36,-299.66 111.86,-289.66 108.36,-299.66 115.36,-299.66"/>
+</g><g id="edge3" class="edge" data-name="RDS Client-&gt;IAM Authentication" data-comment="Application-&gt;RDS Database">
+
+<path fill="none" stroke="black" d="M111.86,-215.7C111.86,-207.93 111.86,-199.57 111.86,-191.43"/>
+<polygon fill="black" stroke="black" points="115.36,-191.66 111.86,-181.66 108.36,-191.66 115.36,-191.66"/>
+</g>
+<!-- Application&#45;&gt;RDS Client -->
+
+<g id="edge4" class="edge" data-name="IAM Authentication-&gt;RDS Database" data-comment="Application-&gt;RDS Client">
+
+<path fill="none" stroke="black" d="M111.86,-107.7C111.86,-99.93 111.86,-91.57 111.86,-83.43"/>
+<polygon fill="black" stroke="black" points="115.36,-83.66 111.86,-73.66 108.36,-83.66 115.36,-83.66"/>
+</g></g>
+</svg>
