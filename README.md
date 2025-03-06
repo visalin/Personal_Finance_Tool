@@ -1,129 +1,285 @@
-# Personal Finance Dashboard - Simplify Your Financial Management
+# Personal Finance Management System - Track, Budget, and Save with Ease
 
-The Personal Finance Dashboard is a comprehensive web application that helps users track expenses, manage budgets, and monitor savings across different categories. Built with Flask and MySQL, it provides an intuitive interface for maintaining financial health through detailed expense tracking and budget management.
+The Personal Finance Management System is a secure, web-based application that helps users track expenses, manage budgets, and monitor savings across different categories. Built with Flask and MySQL, it provides real-time insights into spending patterns and financial goals through an intuitive dashboard interface.
 
-The application offers powerful features for personal finance management including monthly budget tracking, categorized expense logging, and visual representations of financial data. Users can set category-specific budgets, track remaining amounts, and view their savings progress through an interactive dashboard with charts and detailed summaries.
+The application offers comprehensive financial management features including expense tracking with categorization, monthly budget setting, and category-specific budget goals. Users can visualize their financial data through interactive charts, track savings progress, and manage their spending across multiple categories like Food, Transport, Utilities, and more. The system is secured with scrypt password hashing and integrates with AWS RDS for reliable data storage.
 
 ## Repository Structure
 ```
 .
-├── app/                      # Main application package
-│   ├── __init__.py          # Flask application initialization
-│   ├── config.py            # Application configuration settings
-│   ├── models.py            # Database models and schemas
-│   ├── routes.py            # Application routes and view functions
-│   ├── static/              # Static assets (CSS, JS)
-│   ├── templates/           # HTML templates for the application
-│   └── utils.py             # Utility functions
-├── requirements.txt         # Project dependencies
-└── run.py                  # Application entry point
+├── app/                          # Main application package
+│   ├── __init__.py              # Flask application initialization
+│   ├── config.py                # AWS and database configuration
+│   ├── models.py                # Database models for users, expenses, and budgets
+│   ├── routes.py                # Application routes and view functions
+│   ├── static/                  # Static assets directory
+│   │   └── style.css           # Application styling
+│   ├── templates/               # HTML templates
+│   │   ├── dashboard.html       # Main user dashboard
+│   │   ├── add_expense.html     # Expense entry form
+│   │   └── *.html              # Authentication and other templates
+│   └── tests/                   # Test suite directory
+├── docs/                        # Documentation directory
+│   └── infra.dot               # Infrastructure diagram
+├── run.py                       # Application entry point
+└── requirements.txt            # Project dependencies
 ```
 
 ## Usage Instructions
 ### Prerequisites
-- Python 3.6 or higher
-- MySQL Server
-- pip (Python package installer)
+- Python 3.x
+- MySQL database
+- AWS account with RDS access
+- SSL certificate for database connection
+- Environment variables configured in `.env` file:
+  - DB_USER
+  - DB_PASSWORD
+  - DB_HOST
+  - DB_NAME
+  - AWS_REGION
 
 ### Installation
-1. Clone the repository and navigate to the project directory:
 ```bash
+# Clone the repository
 git clone <repository-url>
-cd personal-finance-dashboard
-```
+cd Personal_Finance_Tool
 
-2. Create and activate a virtual environment:
-```bash
+# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. Install the required dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Set up environment variables in a `.env` file:
-```
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_HOST=your_database_host
-DB_NAME=your_database_name
-SECRET_KEY=your_secret_key
-```
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database and AWS credentials
 
-### Quick Start
-1. Initialize the database:
-```bash
+# Initialize the database
 flask db upgrade
 ```
 
-2. Run the application:
+### Quick Start
+1. Start the application:
 ```bash
 python run.py
 ```
 
-3. Access the application at `http://localhost:5000`
+2. Navigate to `http://localhost:5000` in your web browser
+3. Register a new account or login with existing credentials
+4. Access the dashboard to:
+   - Add expenses
+   - Set monthly budgets
+   - Create budget categories
+   - View financial summaries and charts
 
 ### More Detailed Examples
-#### Adding an Expense
-```python
-# Route: /add_expense
-# Method: POST
-{
-    "description": "Grocery Shopping",
-    "amount": 150.50,
-    "category": "Food",
-    "date": "2024-01-15"
-}
+## API Routes
+
+### Authentication Routes
+
+#### 1. Register User
+```http
+POST /register
+Content-Type: application/x-www-form-urlencoded
+
+firstname=John&lastname=Doe&email=john@example.com&username=johndoe&password=securepass123
 ```
 
-#### Setting a Monthly Budget
-```python
-# Route: /Setbudget
-# Method: POST
-{
-    "amount": 2000.00,
-    "month": "2024-01"
-}
+Response (Success):
 ```
+Status: 302 Found
+Location: /login
+Flash Message: "Registration successful! Please log in."
+```
+
+#### 2. Login
+```http
+POST /login
+Content-Type: application/x-www-form-urlencoded
+
+username=johndoe&password=securepass123
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /dashboard
+Session: Created with user_id
+```
+
+#### 3. Logout
+```http
+GET /logout
+```
+
+Response:
+```
+Status: 302 Found
+Location: /login
+Flash Message: "You have been logged out."
+```
+
+### Dashboard Routes
+
+#### 4. View Dashboard
+```http
+GET /dashboard
+```
+
+Response:
+```html
+Status: 200 OK
+Content-Type: text/html
+
+<!-- Returns dashboard.html with:
+  - User's expenses
+  - Budget summary
+  - Budget categories
+-->
+```
+
+### Expense Management Routes
+
+#### 5. Add Expense
+```http
+POST /add_expense
+Content-Type: application/x-www-form-urlencoded
+
+description=Grocery Shopping&amount=150.50&category=Food&date=2024-01-15
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /dashboard
+Flash Message: "Expense added successfully!"
+```
+
+### Budget Management Routes
+
+#### 6. Set Monthly Budget
+```http
+POST /Setbudget
+Content-Type: application/x-www-form-urlencoded
+
+amount=5000&month=2024-01
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /dashboard
+Flash Message: "Budget set successfully!"
+```
+
+#### 7. Set Budget Categories
+```http
+POST /budget_categories
+Content-Type: application/x-www-form-urlencoded
+
+category=Food&target_amount=800&target_date=2024-01
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /dashboard
+Flash Message: "Budget category set successfully!"
+```
+
+### Password Recovery Routes
+
+#### 8. Forgot Password
+```http
+POST /forgot_password
+Content-Type: application/x-www-form-urlencoded
+
+email=john@example.com
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /reset_password/john@example.com
+```
+
+#### 9. Reset Password
+```http
+POST /reset_password/<email>
+Content-Type: application/x-www-form-urlencoded
+
+password=newSecurePass123
+```
+
+Response (Success):
+```
+Status: 302 Found
+Location: /login
+Flash Message: "Your password has been updated!"
+```
+
 
 ### Troubleshooting
-#### Database Connection Issues
-- Error: "Unable to connect to MySQL server"
-  1. Verify MySQL service is running:
+1. Database Connection Issues
+   - Error: "Unable to connect to database"
+   - Solution:
      ```bash
-     sudo service mysql status
-     ```
-  2. Check database credentials in `.env` file
-  3. Ensure MySQL server is accepting connections:
-     ```bash
-     mysql -u your_username -p
+     # Verify environment variables
+     echo $DB_HOST
+     echo $DB_USER
+     
+     # Check SSL certificate
+     ls app/certs/rds-ca-2019-root.pem
      ```
 
-#### Login Issues
-- Error: "Invalid username or password"
-  1. Check if user exists in database:
-     ```sql
-     SELECT * FROM user WHERE username = 'your_username';
+2. AWS Authentication Failures
+   - Error: "Could not generate auth token"
+   - Solution:
+     ```bash
+     # Verify AWS credentials
+     aws configure list
+     # Check region configuration in config.py
      ```
-  2. Reset password through forgot password flow
-  3. Clear browser cache and cookies
 
 ## Data Flow
-The application follows a standard MVC pattern for data processing. User requests flow through routes, which interact with models to perform CRUD operations on the MySQL database.
+The application follows a three-tier architecture where user interactions flow through the presentation layer to the business logic layer and finally to the data persistence layer.
 
 ```ascii
-[User Interface] -> [Routes] -> [Models] -> [Database]
-       ↑             ↓           ↓            ↑
-       └─────────── [Templates] [Utils] ──────┘
+[User Browser] -> [Flask Routes] -> [Business Logic] -> [MySQL RDS]
+     ↑               |                    ↑               |
+     |               v                    |               v
+[Templates] <- [View Functions] <- [Data Models] <- [AWS Auth]
 ```
 
-Key component interactions:
-1. Routes handle HTTP requests and manage application flow
-2. Models define database structure and handle data operations
-3. Templates render dynamic HTML content
-4. Utils provide helper functions for data processing
-5. Database stores user data, expenses, and budget information
-6. Authentication middleware ensures secure access to protected routes
-7. Session management maintains user state during interaction
+Component interactions:
+1. User requests are handled by Flask routes in `routes.py`
+2. Authentication is managed through session-based login
+3. Database operations use SQLAlchemy ORM for data access
+4. AWS RDS connections are secured with SSL and IAM authentication
+5. Charts and visualizations are generated using Chart.js
+6. Budget calculations are performed in real-time
+7. Password security is maintained using scrypt hashing
+
+## Infrastructure
+
+![Infrastructure diagram](./docs/infra.svg)
+### Database
+- RDS Database (AWS::RDS::DBInstance)
+  - MySQL database instance for storing application data
+
+### Security
+- SSL Certificate (AWS::ACM::Certificate)
+  - SSL certificate for secure database connections
+
+### Application
+- Flask Application (Custom::FlaskApplication)
+  - Web application hosted on AWS
+  - Connects to RDS using IAM authentication
+  - Uses SSL for secure database communication
+
+### Networking
+- AWS Region (AWS::Region)
+  - Hosts all AWS resources
+- RDS Client (AWS::RDS::Client)
+  - Manages database authentication and connections
