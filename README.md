@@ -230,7 +230,12 @@ Flash Message: "Your password has been updated!"
      echo $DB_USER
      
      # Check SSL certificate
-     ls app/certs/rds-ca-2019-root.pem
+     If you would like to configure a RDS connectivity from EC2.Follow the below steps on EC2 instance:
+       mkdir -p app/certs
+       cd app/certs
+       wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+       mv global-bundle.pem rds-ca-2019-root.pem
+       ls app/certs/rds-ca-2019-root.pem
      ```
 
 2. AWS Authentication Failures
@@ -284,3 +289,65 @@ Component interactions:
   - Hosts all AWS resources
 - RDS Client (AWS::RDS::Client)
   - Manages database authentication and connections
+
+## Upcoming Features
+
+### 1. Multi-Currency Support
+- Currency conversion for international transactions
+- Real-time exchange rate integration
+- Default currency preferences
+- Multi-currency reporting
+
+### 2. Receipt Scanner Integration
+- OCR-powered receipt scanning
+- Automatic expense entry from photos
+- Digital receipt storage and organization
+- Smart merchant recognition
+
+### 3. Recurring Transactions
+- Automated tracking of subscriptions
+- Bill payment reminders
+- Recurring expense patterns detection
+- Auto-categorization of regular payments
+
+### 4. Financial Goals Tracking
+- Custom savings targets
+- Debt reduction planning
+- Investment milestone tracking
+- Visual progress indicators
+
+### 5. Smart Insights and Recommendations
+- AI-powered spending analysis
+- Personalized budget recommendations
+- Anomaly detection in spending patterns
+- Monthly financial health scores
+
+### 6. Bill Splitting Feature
+- Group expense management
+- Shared budget tracking
+- Settlement balance calculator
+- Payment request generation
+
+### 7. Investment Portfolio Tracking
+- Stock portfolio integration
+- Investment performance monitoring
+- Asset allocation visualization
+- Dividend tracking
+
+### 8. Tax Management Module
+- Tax-deductible expense tracking
+- Category-wise tax reporting
+- Annual tax summary generation
+- Receipt organization for tax purposes
+
+### 9. Custom Reports Generator
+- Customizable financial reports
+- Multiple export formats (PDF, CSV, Excel)
+- Scheduled report generation
+- Interactive data visualization
+
+### 10. Budget AI Assistant
+- Natural language expense logging
+- Smart financial advice
+- Quick query responses
+- Personalized financial insights
