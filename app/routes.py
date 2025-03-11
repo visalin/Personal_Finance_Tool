@@ -190,9 +190,15 @@ def budget_categories():
 
         target_date = datetime.strptime(target_date_str, '%Y-%m').date()
 
-        # Create a new Budget Category
-        new_category = BudgetCategory(user_id=user_id, category=category, target_amount=target_amount, target_date=target_date)
-        db.session.add(new_category)
+
+        # Check if the category already exists for the user
+        existing_category = BudgetCategory.query.filter_by(user_id=user_id, category=category, target_date=target_date).first()
+        if existing_category:
+            existing_category.target_amount = target_amount
+        else:
+            # Create a new Budget Category
+            new_category = BudgetCategory(user_id=user_id, category=category, target_amount=target_amount, target_date=target_date)
+            db.session.add(new_category)
         db.session.commit()
         flash('Budget category set successfully!', 'success')
         return redirect(url_for('dashboard'))
